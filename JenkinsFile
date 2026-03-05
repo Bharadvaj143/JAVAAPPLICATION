@@ -1,0 +1,40 @@
+pipeline{
+    agent any 
+    stages{
+        stage('git clone'){
+            steps{
+                git branch: 'master', url: 'https://github.com/Bharadvaj143/JAVAAPPLICATION.git'           }
+        }
+    stage('build docker image'){
+        steps{
+            script {
+                sh 'docker build -t bharadvajnanepalli/javaapplication:latest -t bharadvajnanepalli/javaapplication:${BUILD_NUMBER} .'
+            }
+        }
+    }
+    stage(push the image to docker hub){
+        steps{
+            withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                sh "docker push bharadvajnanepalli/javaapplication:latest"
+                sh "docker push bharadvajnanepalli/javaapplication:${BUILD_NUMBER}"
+            }
+        }
+    }
+    stage(deploy the container){
+        steps{
+            script{
+                sh 'docker run -d --name javaapplication -p 9090:9009 bharadvajnanepalli/javaapplication:${BUILD_NUMBER}'
+            }
+        }
+    }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs for details.'
+        }
+    }
+}
