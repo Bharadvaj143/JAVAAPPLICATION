@@ -28,7 +28,7 @@ pipeline{
         stage('deploy the container'){
             steps{
                 script{
-                    sh "docker rm -f javacicdapp || true"
+                    sh "docker rm -f javaapplication || true"
                     sh "docker run  --name javaapplication -p 9090:9090 $DOCKER_IMAGE:${BUILD_NUMBER}"
                 }
             }
